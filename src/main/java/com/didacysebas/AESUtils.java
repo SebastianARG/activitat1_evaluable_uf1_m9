@@ -16,6 +16,14 @@ public class AESUtils {
         return new SecretKeySpec(keyBytes, 0, 16, "AES");
     }
 
+    public static String encrypt(String plaintext, SecretKey key, byte[] iv) throws Exception {
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
+        byte[] ciphertext = cipher.doFinal(plaintext.getBytes("UTF-8"));
+        return Base64.getEncoder().encodeToString(ciphertext);
+    }
+
+
 
     public static String decrypt(String base64Ciphertext, SecretKey key, byte[] iv) throws Exception {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");

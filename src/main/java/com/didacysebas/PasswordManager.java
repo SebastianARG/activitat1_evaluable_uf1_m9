@@ -11,8 +11,12 @@ public class PasswordManager {
     }
 
     public static void savePassword(File file, String password) throws IOException {
-        Files.write(file.toPath(), (password + System.lineSeparator()).getBytes(),
-                java.nio.file.StandardOpenOption.APPEND);
+        List<String> passwords = loadPasswords(file);
+        if (!passwords.contains(password)) {
+            Files.write(file.toPath(), (password + System.lineSeparator()).getBytes(),
+                    java.nio.file.StandardOpenOption.APPEND);
+        }
     }
+
 }
 

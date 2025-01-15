@@ -2,6 +2,7 @@ package com.didacysebas;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import java.io.File;
 import java.io.IOException;
 
@@ -24,27 +25,18 @@ public class Metodos {
         return creado;
     }
     //Xifrat de dades dins d’un vector usant AES en mode ECB
-    public static byte[] encryptData(byte[] data, SecretKey skey){
-        byte[] encryptedData = null;
-        try {
-            Cipher c = Cipher.getInstance("AES/ECB/PKCS5Padding");
-            c.init(Cipher.ENCRYPT_MODE, skey);
-            encryptedData = c.doFinal(data);
-        } catch (Exception e) {
-        }
-        return encryptedData;
+    public static byte[] encryptData(byte[] data, SecretKey skey, byte[] iv) throws Exception {
+        Cipher c = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        c.init(Cipher.ENCRYPT_MODE, skey, new IvParameterSpec(iv));
+        return c.doFinal(data);
     }
-    //Xifrat de dades dins d’un vector usant AES en mode ECB
-    public static byte[] decryptData(byte[] data, SecretKey skey){
-        byte[] decryptedData = null;
-        try {
-            Cipher c = Cipher.getInstance("AES/ECB/PKCS5Padding");
-            c.init(Cipher.DECRYPT_MODE, skey);
-            decryptedData = c.doFinal(data);
-        } catch (Exception e) {
-        }
-        return decryptedData;
+
+    public static byte[] decryptData(byte[] data, SecretKey skey, byte[] iv) throws Exception {
+        Cipher c = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        c.init(Cipher.DECRYPT_MODE, skey, new IvParameterSpec(iv));
+        return c.doFinal(data);
     }
+
 
 
 }

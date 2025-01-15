@@ -1,7 +1,5 @@
 package com.didacysebas;
 
-
-
 import picocli.CommandLine;
 
 import javax.crypto.SecretKey;
@@ -26,10 +24,19 @@ public class DecryptCommand implements Runnable {
     @CommandLine.Option(names = "--pwdfile", description = "Fitxer de paraules de pas conegudes.")
     private File passwordFile = new File("passwords.txt");
 
+    // Métodos setter para configurar las propiedades
+    public void setInputFile(File inputFile) {
+        this.inputFile = inputFile;
+    }
+
+    public void setPasswordFile(File passwordFile) {
+        this.passwordFile = passwordFile;
+    }
+
     @Override
     public void run() {
         try {
-            // 1. Llegir el fitxer i separar IV i ciphertext
+            // 1. Leer el archivo y separar IV y ciphertext
             String base64Content = Files.readString(inputFile.toPath());
             byte[] decoded = Base64.getDecoder().decode(base64Content);
 
@@ -41,10 +48,10 @@ public class DecryptCommand implements Runnable {
 
             String ciphertextBase64 = Base64.getEncoder().encodeToString(ciphertextBytes);
 
-            // 2. Carregar paraules de pas conegudes
-            List<String> knownPasswords = loadKnownPasswords(passwordFile);
+            // 2. Cargar contraseñas conocidas
+            List<String> knownPasswords = PasswordManager.loadPasswords(passwordFile);
 
-            // 3. Intentar cadascuna de les contrasenyes conegudes
+            // 3. Intentar descifrar con cada contraseña
             String decryptedMessage = null;
             String validPassword = null;
             for (String pwd : knownPasswords) {
@@ -52,7 +59,6 @@ public class DecryptCommand implements Runnable {
                     SecretKey key = AESUtils.deriveKey(pwd);
                     String candidatePlain = AESUtils.decrypt(ciphertextBase64, key, iv);
                     if (isPlausibleText(candidatePlain)) {
-                        // Opcionalment, preguntar si realment és correcta
                         System.out.println("Text desxifrat:\n" + candidatePlain);
                         System.out.print("Confirmes que és correcte? (y/n): ");
                         String resp = new java.util.Scanner(System.in).nextLine().trim();
@@ -63,16 +69,13 @@ public class DecryptCommand implements Runnable {
                         }
                     }
                 } catch (Exception ignored) {
-                    // No era la contrasenya
                 }
             }
 
-            // 4. Si no hem trobat contrasenya, força bruta
+            // 4. Fuerza bruta si no se encontró una contraseña válida
             if (decryptedMessage == null) {
-                // Exemple simplificat (veure el mètode bruteForcePassword més amunt)
                 validPassword = bruteForcePassword(iv, ciphertextBase64);
                 if (validPassword != null) {
-                    // Tornem a desencriptar per obtenir el text final
                     SecretKey key = AESUtils.deriveKey(validPassword);
                     decryptedMessage = AESUtils.decrypt(ciphertextBase64, key, iv);
                 }
@@ -83,32 +86,25 @@ public class DecryptCommand implements Runnable {
                 return;
             }
 
-            // 5. Si hem trobat una contrasenya nova, guardar-la
+            // 5. Guardar nueva contraseña si es necesario
             if (!knownPasswords.contains(validPassword)) {
                 PasswordManager.savePassword(passwordFile, validPassword);
             }
 
-            // 6. Guardar o mostrar el text desxifrat
+            // 6. Guardar o mostrar el mensaje descifrado
             if (outputFile != null) {
-                Files.writeString(outputFile.toPath(), decryptedMessage, StandardOpenOption.CREATE);
+                Files.writeString(outputFile.toPath(), decryptedMessage);
                 System.out.println("Missatge desxifrat guardat a: " + outputFile.getAbsolutePath());
             } else {
                 System.out.println("Missatge desxifrat:\n" + decryptedMessage);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
-    private List<String> loadKnownPasswords(File pwdFile) {
-        try {
-            if (!pwdFile.exists()) {
-                return new ArrayList<>();
-            }
-            return PasswordManager.loadPasswords(pwdFile);
-        } catch (IOException e) {
+            // Almacenar la clave encontrada en CommandContext
+            SecretKey keyFound = AESUtils.deriveKey(validPassword);
+            CommandContext.setFoundKey(keyFound);
+
+        } catch (Exception e) {
             e.printStackTrace();
-            return new ArrayList<>();
         }
     }
 
@@ -121,7 +117,6 @@ public class DecryptCommand implements Runnable {
     }
 
     private String bruteForcePassword(byte[] iv, String ciphertextBase64) {
-        // Alfabet i generació (veure exemple a dalt)
         char[] alphabet = "abcdefghijklmnopqrstuvwxyz0123456789_?%!".toCharArray();
         for (char a : alphabet) {
             for (char b : alphabet) {
@@ -148,7 +143,6 @@ public class DecryptCommand implements Runnable {
                 System.out.print("És correcte? (y/n): ");
                 String resp = new java.util.Scanner(System.in).nextLine().trim();
                 if ("y".equalsIgnoreCase(resp)) {
-                    // guardar password
                     PasswordManager.savePassword(passwordFile, password);
                     return true;
                 }
