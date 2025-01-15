@@ -32,6 +32,4 @@ public class AESUtils {
         return new String(decryptedBytes, "UTF-8");
     }
 
-
-    // TODO: Añadir método para cifrar
 }

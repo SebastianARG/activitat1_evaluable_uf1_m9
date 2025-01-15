@@ -2,13 +2,19 @@ package com.didacysebas;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PasswordManager {
 
     public static List<String> loadPasswords(File file) throws IOException {
+        if (!file.exists() || Files.size(file.toPath()) == 0) {
+            System.out.println("El archivo de contraseñas está vacío. Se procederá a fuerza bruta.");
+            return new ArrayList<>();
+        }
         return Files.readAllLines(file.toPath());
     }
+
 
     public static void savePassword(File file, String password) throws IOException {
         List<String> passwords = loadPasswords(file);
