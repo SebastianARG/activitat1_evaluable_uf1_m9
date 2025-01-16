@@ -4,6 +4,7 @@ import picocli.CommandLine;
 
 import javax.crypto.SecretKey;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Base64;
 import java.util.List;
@@ -36,18 +37,13 @@ public class DecryptCommand implements Runnable {
     @Override
     public void run() {
         try {
-            // 1. Leer el archivo y separar IV y ciphertext
-            String base64Content = Files.readString(inputFile.toPath());
-            byte[] decoded = Base64.getDecoder().decode(base64Content);
-
+            byte[] fileBytes = Files.readAllBytes(inputFile.toPath());
             byte[] iv = new byte[16];
-            System.arraycopy(decoded, 0, iv, 0, 16);
+            System.arraycopy(fileBytes, 0, iv, 0, 16);
 
-            byte[] ciphertextBytes = new byte[decoded.length - 16];
-            System.arraycopy(decoded, 16, ciphertextBytes, 0, decoded.length - 16);
-
+            byte[] ciphertextBytes = new byte[fileBytes.length - 16];
+            System.arraycopy(fileBytes, 16, ciphertextBytes, 0, fileBytes.length - 16);
             String ciphertextBase64 = Base64.getEncoder().encodeToString(ciphertextBytes);
-
             // 2. Cargar contraseñas conocidas
             List<String> knownPasswords = PasswordManager.loadPasswords(passwordFile);
 

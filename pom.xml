@@ -15,14 +15,14 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 <!--    &lt;!&ndash;-->
-<!--
+
     <dependencies>
         <dependency>
             <groupId>info.picocli</groupId>
             <artifactId>picocli</artifactId>
-            <version>4.7.6</version>
+            <version>4.7.0</version>
         </dependency>
     </dependencies>
-    -->
+
 <!--        &ndash;&gt;-->
 </project>

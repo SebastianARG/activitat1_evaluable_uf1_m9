@@ -8,7 +8,7 @@ import picocli.CommandLine;
         description = "KeyBreaker: Desxifra i modifica missatges interceptats.",
         version = "1.0",
         mixinStandardHelpOptions = true,
-        subcommands = {DecryptCommand.class, ReplaceCommand.class}
+        subcommands = {DecryptCommand.class, ReplaceCommand.class, Sumar.class}
 )
 public class KeyBreaker implements Runnable {
 
