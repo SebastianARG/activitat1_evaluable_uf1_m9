@@ -26,9 +26,11 @@ public class AESUtils {
 
 
     public static String decrypt(String base64Ciphertext, SecretKey key, byte[] iv) throws Exception {
+
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         cipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
         byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(base64Ciphertext));
+
         return new String(decryptedBytes, "UTF-8");
     }
 

@@ -37,13 +37,18 @@ public class DecryptCommand implements Runnable {
     @Override
     public void run() {
         try {
-            byte[] fileBytes = Files.readAllBytes(inputFile.toPath());
-            byte[] iv = new byte[16];
-            System.arraycopy(fileBytes, 0, iv, 0, 16);
+            // Leer el IV y el texto cifrado
+            byte[] iv;
+            byte[] ciphertextBytes;
 
-            byte[] ciphertextBytes = new byte[fileBytes.length - 16];
-            System.arraycopy(fileBytes, 16, ciphertextBytes, 0, fileBytes.length - 16);
+            List<String> lines = Files.readAllLines(inputFile.toPath(), StandardCharsets.UTF_8);
+            if (lines.size() < 2) {
+                throw new IllegalArgumentException("El archivo no contiene un IV y un texto cifrado válidos.");
+            }
+            iv = Base64.getDecoder().decode(lines.get(0).trim());
+            ciphertextBytes = Base64.getDecoder().decode(lines.get(1).trim());
             String ciphertextBase64 = Base64.getEncoder().encodeToString(ciphertextBytes);
+
             // 2. Cargar contraseñas conocidas
             List<String> knownPasswords = PasswordManager.loadPasswords(passwordFile);
 
@@ -64,7 +69,7 @@ public class DecryptCommand implements Runnable {
                             break;
                         }
                     }
-                } catch (Exception ignored) {
+                } catch (Exception e) {
                 }
             }
 
@@ -92,7 +97,7 @@ public class DecryptCommand implements Runnable {
                 Files.writeString(outputFile.toPath(), decryptedMessage);
                 System.out.println("Missatge desxifrat guardat a: " + outputFile.getAbsolutePath());
             } else {
-                System.out.println("Missatge desxifrat:\n" + decryptedMessage);
+                //System.out.println("Missatge desxifrat:\n" + decryptedMessage);
             }
 
             // Almacenar la clave encontrada en CommandContext
@@ -100,17 +105,29 @@ public class DecryptCommand implements Runnable {
             CommandContext.setFoundKey(keyFound);
 
         } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
+
     private boolean isPlausibleText(String text) {
-        long count = text.chars()
-                .filter(c -> Character.isLetter(c) || Character.isSpaceChar(c))
+        if (text == null || text.isEmpty()) {
+            return false; // No se puede considerar plausible un texto vacío o nulo
+        }
+
+        // Contar caracteres válidos: letras, números, espacios y ciertos signos
+        long validCharCount = text.chars()
+                .filter(c -> Character.isLetter(c) || Character.isDigit(c) || Character.isSpaceChar(c) ||
+                        c == '_' || c == '?' || c == '%' || c == '!')
                 .count();
-        double ratio = (double) count / text.length();
+
+        // Calcular el ratio de caracteres válidos sobre la longitud total del texto
+        double ratio = (double) validCharCount / text.length();
+
+        // Considerar plausible si más del 80% de los caracteres son válidos
         return ratio > 0.8;
     }
+
+
 
     private String bruteForcePassword(byte[] iv, String ciphertextBase64) {
         char[] alphabet = "abcdefghijklmnopqrstuvwxyz0123456789_?%!".toCharArray();
@@ -128,6 +145,7 @@ public class DecryptCommand implements Runnable {
         }
         return null;
     }
+
 
     private boolean tryDecrypt(String password, byte[] iv, String ciphertextBase64) {
         try {
@@ -147,4 +165,15 @@ public class DecryptCommand implements Runnable {
         }
         return false;
     }
+
+    private boolean alreadySaved(String password) {
+        try {
+            List<String> existingPasswords = PasswordManager.loadPasswords(passwordFile);
+            return existingPasswords.contains(password);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 }
