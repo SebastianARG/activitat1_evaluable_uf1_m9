@@ -4,6 +4,7 @@ import picocli.CommandLine;
 
 import javax.crypto.SecretKey;
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Base64;
@@ -154,15 +155,15 @@ public class DecryptCommand implements Runnable {
             if (isPlausibleText(plain)) {
                 System.out.println("Possiblement la contrasenya és: " + password);
                 System.out.println("Text desxifrat:\n" + plain);
-                System.out.print("És correcte? (y/n): ");
-                String resp = new java.util.Scanner(System.in).nextLine().trim();
-                if ("y".equalsIgnoreCase(resp)) {
+                if (!alreadySaved(password)) {
                     PasswordManager.savePassword(passwordFile, password);
-                    return true;
                 }
+
+                return true; // Asume automáticamente que es correcto
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
         }
+
         return false;
     }
 
