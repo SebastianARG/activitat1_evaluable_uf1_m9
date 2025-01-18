@@ -1,7 +1,7 @@
-package com.didacysebas;
+package com.didacysebas.commands;
 
 import picocli.CommandLine;
-
+import com.didacysebas.utilities.AESUtils;
 import javax.crypto.SecretKey;
 import java.io.File;
 import java.nio.file.Files;
@@ -27,6 +27,16 @@ public class ReplaceCommand implements Runnable {
     @Override
     public void run() {
         try {
+            // Validar archivos
+            if (!inputFile.exists()) {
+                System.err.println("El archivo de entrada no existe: " + inputFile.getAbsolutePath());
+                return;
+            }
+            if (!passwordFile.exists()) {
+                System.err.println("El archivo de contraseñas no existe: " + passwordFile.getAbsolutePath());
+                return;
+            }
+
             // Descifrar el mensaje primero
             DecryptCommand decryptCommand = new DecryptCommand();
             decryptCommand.setInputFile(inputFile);
@@ -51,24 +61,18 @@ public class ReplaceCommand implements Runnable {
             // Cifrar el nuevo mensaje
             String ciphertextBase64 = AESUtils.encrypt(nouMissatge, keyTrobat, newIv);
 
-            // Concatenar el IV y el ciphertext
-            byte[] finalBytes = new byte[newIv.length + Base64.getDecoder().decode(ciphertextBase64).length];
-            System.arraycopy(newIv, 0, finalBytes, 0, newIv.length);
-            System.arraycopy(Base64.getDecoder().decode(ciphertextBase64), 0, finalBytes, newIv.length,
-                    Base64.getDecoder().decode(ciphertextBase64).length);
-
-            String finalBase64 = Base64.getEncoder().encodeToString(finalBytes);
-
             // Determinar el archivo de salida
             File out = (outputFile != null) ? outputFile : inputFile;
 
-            // Escribir el archivo final
-            Files.writeString(out.toPath(), finalBase64, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            // Escribir el IV y el ciphertext en líneas separadas
+            Files.writeString(out.toPath(),
+                    Base64.getEncoder().encodeToString(newIv) + "\n" + ciphertextBase64,
+                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+
             System.out.println("Missatge re-xifrat guardat a: " + out.getAbsolutePath());
 
         } catch (Exception e) {
             System.err.println("Error al reemplaçar el missatge: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 }

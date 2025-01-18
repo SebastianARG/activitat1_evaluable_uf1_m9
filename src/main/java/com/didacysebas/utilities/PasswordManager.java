@@ -1,4 +1,4 @@
-package com.didacysebas;
+package com.didacysebas.utilities;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,7 +9,6 @@ public class PasswordManager {
 
     public static List<String> loadPasswords(File file) throws IOException {
         if (!file.exists() || Files.size(file.toPath()) == 0) {
-            System.out.println("El archivo de contraseñas está vacío. Se procederá a fuerza bruta.");
             return new ArrayList<>();
         }
         return Files.readAllLines(file.toPath());

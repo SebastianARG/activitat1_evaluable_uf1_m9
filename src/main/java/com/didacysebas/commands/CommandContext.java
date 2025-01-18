@@ -1,4 +1,4 @@
-package com.didacysebas;
+package com.didacysebas.commands;
 
 import javax.crypto.SecretKey;
 

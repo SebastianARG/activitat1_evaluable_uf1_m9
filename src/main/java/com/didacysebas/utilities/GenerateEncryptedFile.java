@@ -1,4 +1,4 @@
-package com.didacysebas;
+package com.didacysebas.utilities;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -13,8 +13,8 @@ public class GenerateEncryptedFile {
 
     public static void main(String[] args) throws Exception {
         // Datos para el cifrado
-        String plaintext = "hola mundo"; // Mensaje a cifrar
-        String password = "ua!?";        // Contraseña
+        String plaintext = "hola mundo2"; // Mensaje a cifrar
+        String password = "uagf";        // Contraseña
 
         // Derivar clave de 128 bits (16 bytes) usando SHA3-256
         SecretKey key = deriveKey(password);
@@ -30,7 +30,7 @@ public class GenerateEncryptedFile {
         String ivBase64 = Base64.getEncoder().encodeToString(iv);
 
         // Guardar en archivo con formato IV en la primera línea, mensaje cifrado en la segunda
-        Path outputPath = Path.of(System.getProperty("user.home") + "/Desktop/texto_cifrado.txt");
+        Path outputPath = Path.of(System.getProperty("user.home") + "/Desktop/texto_cifrado2.txt");
         Files.writeString(outputPath, ivBase64 + "\n" + ciphertext);
 
         System.out.println("Archivo cifrado generado correctamente en: " + outputPath.toAbsolutePath());

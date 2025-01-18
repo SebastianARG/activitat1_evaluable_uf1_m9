@@ -1,6 +1,8 @@
 package com.didacysebas;
 
 
+import com.didacysebas.commands.DecryptCommand;
+import com.didacysebas.commands.ReplaceCommand;
 import picocli.CommandLine;
 
 @CommandLine.Command(

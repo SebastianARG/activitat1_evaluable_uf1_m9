@@ -1,7 +1,6 @@
-package com.didacysebas;
-
+package com.didacysebas.commands;
+import com.didacysebas.utilities.*;
 import picocli.CommandLine;
-
 import javax.crypto.SecretKey;
 import java.io.File;
 import java.io.IOException;
@@ -9,7 +8,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Base64;
 import java.util.List;
-
 @CommandLine.Command(
         name = "decrypt",
         mixinStandardHelpOptions = true,
@@ -25,6 +23,8 @@ public class DecryptCommand implements Runnable {
 
     @CommandLine.Option(names = "--pwdfile", description = "Fitxer de paraules de pas conegudes.")
     private File passwordFile = new File("passwords.txt");
+
+    private static boolean bruteForceMessagePrinted = false; // Variable para controlar el mensaje
 
     // Métodos setter para configurar las propiedades
     public void setInputFile(File inputFile) {
@@ -52,6 +52,12 @@ public class DecryptCommand implements Runnable {
 
             // 2. Cargar contraseñas conocidas
             List<String> knownPasswords = PasswordManager.loadPasswords(passwordFile);
+
+            // Verificar si el archivo de contraseñas está vacío
+            if (knownPasswords.isEmpty() && !bruteForceMessagePrinted) {
+                System.out.println("El archivo de contraseñas está vacío. Se procederá a fuerza bruta.");
+                bruteForceMessagePrinted = true;
+            }
 
             // 3. Intentar descifrar con cada contraseña
             String decryptedMessage = null;
@@ -97,8 +103,6 @@ public class DecryptCommand implements Runnable {
             if (outputFile != null) {
                 Files.writeString(outputFile.toPath(), decryptedMessage);
                 System.out.println("Missatge desxifrat guardat a: " + outputFile.getAbsolutePath());
-            } else {
-                //System.out.println("Missatge desxifrat:\n" + decryptedMessage);
             }
 
             // Almacenar la clave encontrada en CommandContext
@@ -106,9 +110,9 @@ public class DecryptCommand implements Runnable {
             CommandContext.setFoundKey(keyFound);
 
         } catch (Exception e) {
+            System.err.println("Error al descifrar el mensaje: " + e.getMessage());
         }
     }
-
 
     private boolean isPlausibleText(String text) {
         if (text == null || text.isEmpty()) {
@@ -128,8 +132,6 @@ public class DecryptCommand implements Runnable {
         return ratio > 0.8;
     }
 
-
-
     private String bruteForcePassword(byte[] iv, String ciphertextBase64) {
         char[] alphabet = "abcdefghijklmnopqrstuvwxyz0123456789_?%!".toCharArray();
         for (char a : alphabet) {
@@ -146,7 +148,6 @@ public class DecryptCommand implements Runnable {
         }
         return null;
     }
-
 
     private boolean tryDecrypt(String password, byte[] iv, String ciphertextBase64) {
         try {
@@ -172,9 +173,15 @@ public class DecryptCommand implements Runnable {
             List<String> existingPasswords = PasswordManager.loadPasswords(passwordFile);
             return existingPasswords.contains(password);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.printf("LOG: Error loading password file\n%s\n"+e.getMessage());
             return false;
         }
     }
 
+    private void printBruteForceMessage() {
+        if (!bruteForceMessagePrinted) {
+            System.out.println("El archivo de contraseñas está vacío. Se procederá a fuerza bruta.");
+            bruteForceMessagePrinted = true;
+        }
+    }
 }
