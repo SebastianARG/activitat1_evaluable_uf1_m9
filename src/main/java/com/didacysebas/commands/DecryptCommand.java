@@ -8,6 +8,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Base64;
 import java.util.List;
+
+/**
+ * @author sebastian y dídac
+ */
 @CommandLine.Command(
         name = "decrypt",
         mixinStandardHelpOptions = true,

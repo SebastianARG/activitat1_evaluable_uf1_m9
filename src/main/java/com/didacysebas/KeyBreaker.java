@@ -5,6 +5,10 @@ import com.didacysebas.commands.DecryptCommand;
 import com.didacysebas.commands.ReplaceCommand;
 import picocli.CommandLine;
 
+
+/**
+ * @author sebastian y dídac
+ */
 @CommandLine.Command(
         name = "keybreaker",
         description = "KeyBreaker: Desxifra i modifica missatges interceptats.",

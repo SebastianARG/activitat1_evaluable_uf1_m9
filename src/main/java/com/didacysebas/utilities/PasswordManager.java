@@ -5,6 +5,9 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author sebastian y dídac
+ */
 public class PasswordManager {
 
     public static List<String> loadPasswords(File file) throws IOException {

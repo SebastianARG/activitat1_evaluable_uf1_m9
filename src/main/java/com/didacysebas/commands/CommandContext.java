@@ -1,7 +1,9 @@
 package com.didacysebas.commands;
 
 import javax.crypto.SecretKey;
-
+/**
+ * @author sebastian y dídac
+ */
 public class CommandContext {
     private static SecretKey foundKey;
 

@@ -9,10 +9,17 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.Base64;
 
+/**
+ * @author sebastian y dídac
+ */
 public class GenerateEncryptedFile {
-
+    /**
+     *
+     * @param args
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
-        // Datos para el cifrado
+
         String plaintext = "hola mundo2"; // Mensaje a cifrar
         String password = "uagf";        // Contraseña
 
